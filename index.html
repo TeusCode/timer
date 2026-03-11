@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #53b28b, #4e3297);
+            margin: 0px;
+
+            position: relative;
+            height: 100vh;
+            user-select: none;
+        }
+
+        #container {
+            width: 450px;
+            height: 500px;
+            background-color: white;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            box-sizing: border-box;
+            text-align: center;
+            user-select: none;
+
+            position: absolute;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+        }
+
+        #baseRelogio {
+            border: 5px solid rgb(185, 185, 185);
+            width: 220px;
+            height: 220px;
+            margin: auto;
+            margin-top: 50px;
+            margin-bottom: 100px;
+            border-radius: 115px;
+            position: relative;
+            user-select: none;
+        }
+
+        #display {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 2.5em;
+            width: 150px;
+            text-align: center;
+            border: 0px;
+            user-select: none;
+
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%)
+        }
+
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            display: none;
+        }
+
+        .btns {
+            width: 50px;
+            height: 50px;
+            border-radius: 50px;
+            border: 2px solid #685aa1;
+            color: #685aa1;
+            background-color: white;
+            font-size: 1.2em;
+            padding: 10px;
+            text-align: center;
+            user-select: none;
+        }
+
+        .btns:hover {
+            background-color: #685aa1;
+            color: white;
+            user-select: none;
+        }
+
+        #btnIniciar {
+            width: 90px;
+            user-select: none;
+        }
+
+        #relogio {
+            width: 220px;
+            height: 220px;
+            margin-right: 90px;
+            border-radius: 220px;
+            border: 5px solid gray;
+            box-sizing: border-box;
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!--Corpo do Timer:-->
+    <div id="container">
+        <!--Display-->
+        <div id="baseRelogio">
+            <div id="relogio">
+            </div>
+            <input type="time" id="display" value="00:00" max="4"></input>
+        </div>
+        <!--Botões-->
+        <button class="btns" id="btnPause">
+            ❚❚
+        </button>
+        <button class="btns" id="btnIniciar">
+            ▶ Start </button>
+        <button class="btns" id="btnReiniciar">
+            ⟳
+        </button>
+
+    </div>
+
+    <script>
+        //Display:
+        const relogio = document.getElementById('relogio');
+        const display = document.getElementById('display');
+
+
+        //Botões:
+        const btnIniciar = document.getElementById('btnIniciar');
+        const btnPause = document.getElementById('btnPause');
+        const btnReiniciar = document.getElementById('btnReiniciar');
+
+        //Variaveis Auxiliares:
+        let tempoSegundos;
+        let tempoInicial;
+        let contando = false;
+        //Fatia a string e extrai só os segundos;
+        let interval;
+
+        btnIniciar.addEventListener('click', btnStart);
+        btnIniciar.addEventListener('mouseenter', () => {
+            btnIniciar.style.backgroundColor = '#685aa1'
+            btnIniciar.style.color = 'white'
+        }
+        );
+        btnIniciar.addEventListener('mouseleave', () => {
+            btnIniciar.style.backgroundColor = 'white'
+            btnIniciar.style.color = '#685aa1'
+        }
+        );
+        btnPause.addEventListener('click', pauseTimer);
+        btnReiniciar.addEventListener('click', reiniciarTimer)
+
+        //funções:
+        function attDisplay(min, seg) {
+            //Atualização do tempo:
+            tempoSegundos = Number(display.value.slice(0, 2) * 60) + (Number(display.value.slice(3, 5)));
+            rel()
+
+            //Atualização de mostrar no Display:
+            const minF = String(min).padStart(2, '0');
+            const segF = String(seg).padStart(2, '0');
+
+            display.value = `${minF}:${segF}`
+            console.log(`${minF}:${segF}`)
+        }
+
+        function btnStart() {
+            if (contando != true) {
+
+                tempoSegundos = Number(display.value.slice(0, 2) * 60) + (Number(display.value.slice(3, 5)));
+
+                tempoInicial = tempoSegundos
+
+                if (tempoSegundos == 0) {
+                    return alert("Insira o tempo no cronometro!")
+                }
+
+                //Style:
+                btnIniciar.style.backgroundColor = '#685aa1'
+                btnIniciar.style.color = 'white'
+                btnIniciar.textContent = '⏹ Stop'
+                relogio.style.border = '5px solid gray'
+
+                contando = true
+
+                interval = setInterval(() => {
+                    tempoSegundos = Number(display.value.slice(0, 2) * 60) + (Number(display.value.slice(3, 5)));
+
+                    if (tempoSegundos == 0) {
+                        alert('Seu cronometro finalizou!')
+
+                        pararTimer()
+                        return
+                    }
+
+                    tempoSegundos--
+
+                    let minutos = Math.trunc(tempoSegundos / 60);
+                    let segundos = Math.round((tempoSegundos / 60 - minutos) * 60)
+
+                    attDisplay(minutos, segundos)
+
+                }, 1000)
+            } else {
+                pararTimer()
+                return
+            }
+        }
+
+        function pauseTimer() {
+            if (contando == true) {
+                console.log("Timer parado!")
+                clearInterval(interval)
+                contando = false
+                btnPause.textContent = '▶'
+            } else {
+                btnStart()
+                console.log("Timer rodando!")
+                btnPause.textContent = '❚❚'
+            }
+        }
+
+        function reiniciarTimer() {
+            clearInterval(interval)
+
+            let minutos = Math.trunc(tempoInicial / 60);
+            let segundos = Math.round((tempoInicial / 60 - minutos) * 60)
+
+            attDisplay(minutos, segundos)
+            contando = false;
+
+            //Style:
+            btnIniciar.style.backgroundColor = 'white'
+            btnIniciar.style.color = '#685aa1'
+            btnIniciar.textContent = '▶ Start'
+            btnPause.textContent = '❚❚'
+        }
+
+        function pararTimer() {
+            console.log("Timer Finalizado!")
+            clearInterval(interval)
+            attDisplay(0, 0)
+            tempoSegundos = 0
+            contando = false
+
+            //Style:
+            btnIniciar.style.backgroundColor = 'white'
+            btnIniciar.style.color = '#685aa1'
+            btnIniciar.textContent = '▶ Start'
+        }
+
+        function rel() {
+            if (tempoSegundos == 1) {
+                console.log('Inteiro')
+                relogio.style.borderRight = '5px solid #53b28b'
+            }
+
+            if (tempoSegundos == Math.ceil(tempoInicial * 0.25)) {
+                console.log('tres quartos')
+                relogio.style.borderTop = '5px solid #53b28b'
+            }
+
+            if (tempoSegundos == Math.ceil(tempoInicial * 0.5)) {
+                console.log('dois quartos')
+                relogio.style.borderLeft = '5px solid #53b28b'
+            }
+
+            if (tempoSegundos == Math.ceil(tempoInicial * 0.75)) {
+                console.log('um quarto')
+                relogio.style.borderBottom = '5px solid #53b28b'
+            }
+        }
+
+    </script>
+</body>
+
+</html>
